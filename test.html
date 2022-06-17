@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <script>
+    window.addEventListener('message', function(event) {
+      if (event.origin === 'http://localhost:3000') {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        document.querySelectorAll('iframe').forEach(iframe => {
+          console.log(iframe.contentWindow, event.source, iframe.contentWindow === event.source);
+          if (iframe.contentWindow === event.source) {
+            // iframe.style.width = `${data.width}px`;
+            iframe.style.height = `${data.params.height}px`;
+          }
+        });
+      }
+    });
+  </script>
+  <style>
+    iframe {
+      width: 100%;
+      max-width: 700px;
+      outline: 1px dashed red;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <iframe src="http://localhost:3000/e/?code=G_cAIGRyXaq7dflLfFdAljdVbHq0v2f2lxXVlO4nFFktnJvPs1ikOiLYEVVLpuxLt9LJD8HUnQzOp_GvtwEg_a_noq7IU_8lS983RPmaLU-MEc4YCu4AAx8z4x5ez7XqLOinyCQL2m4ATiR7HkvqpTz-7apBIMz2P1azegCkXKhfUETY-BExlP7mMw" width="2051px" height="315px" frameborder="0"></iframe>
+</body>
+</html>
