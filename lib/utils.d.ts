@@ -7,4 +7,7 @@ export declare const compress: (string: string) => Promise<string>;
 export declare const decompress: (base64string: string) => Promise<string>;
 export declare const insertHtml: (el: HTMLElement, html: string) => Promise<void>;
 export declare const copyText: (data: string | Promise<string>) => Promise<void>;
-export declare const onAutoresize: (event: MessageEvent<any>) => void;
+export declare const onAutoresize: (event: MessageEvent<any>) => {
+    width: number;
+    height: number;
+} | undefined;
