@@ -1,0 +1,14 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.json",
+  "include": [
+    "vite.config.*",
+    "tools/**/*",
+    "global.d.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "types": [
+      "node"
+    ]
+  }
+}

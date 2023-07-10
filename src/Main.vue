@@ -1,7 +1,85 @@
+<script setup lang="ts">
+/// <reference types="vite-svg-loader" />
+
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import Logo from '../assets/images/logo.svg?component';
+import Github from '../assets/images/github.svg?component';
+import i18n from './i18n.json';
+import { compress, insertHtml, copyText, onAutoresize } from './utils.js';
+
+const router = useRouter();
+
+const lang = computed(() => {
+  const lang = (window.navigator.language || 'en').split('-')[0].toLocaleLowerCase();
+  return lang === 'ru' ? 'ru' : 'en';
+});
+
+const t = computed(() => {
+  return i18n[lang.value];
+});
+
+const frame = ref<HTMLElement | null>(null);
+const frameBox = ref({ width: 0, height: 0 });
+const value = ref('');
+const compressed = ref<string|null>(null);
+
+const codeCopied = ref(false);
+const autoresizeCopied = ref(false);
+
+const url = computed(() => {
+  const route = router.resolve({
+    name: 'embed',
+    query: { code: compressed.value }
+  });
+
+  return window.location.origin + route.fullPath;
+});
+
+const code = computed(() => {
+  return compressed.value
+    ? `<iframe src="${url.value}" height="${frameBox.value.height}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+    : ''
+});
+
+const autoresize = computed(() => {
+  return location.origin + '/lib/autoresize.js';
+});
+const autoresizeCode = computed(() => {
+  const tag = 'script';
+  return `<${tag} src="${autoresize.value}" charset="utf-8"></${tag}>`;
+});
+
+async function process() {
+  compressed.value = await compress(value.value);
+  frame.value && insertHtml(frame.value, value.value);
+}
+async function copyCode() {
+  await copyText(code.value);
+  codeCopied.value = true;
+  setTimeout(() => codeCopied.value = false, 2500);
+}
+async function copyAutoresize() {
+  await copyText(autoresizeCode.value);
+  autoresizeCopied.value = true;
+  setTimeout(() => autoresizeCopied.value = false, 2500);
+}
+
+onBeforeMount(() => {
+  window.addEventListener('message', onAutoresize);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('message', onAutoresize);
+});
+</script>
+
 <template>
   <div class="main">
     <header class="main__section">
-      <Logo class="main__logo" :title="t.title" />
+      <div class="main__logo" :title="t.title">
+        <Logo class="main__logo" />
+      </div>
+
       <div class="main__description">
         {{ t.description }}
       </div>
@@ -24,14 +102,14 @@
       </section>
     </transition>
 
-    <section class="main__section" :class="{'m_empty': !compressed}">
+    <section class="main__section" :class="{ 'm_empty': !compressed }">
       <transition enter-from-class="m_hidden" leave-to-class="m_hidden">
         <h2 v-if="compressed" class="main__section_title">
           {{ t.preview }}
         </h2>
       </transition>
 
-      <div ref="frame" class="main__frame" />
+      <iframe v-if="compressed" class="main__frame" :src="url" />
     </section>
 
     <section class="main__section">
@@ -60,96 +138,14 @@
         </a>
       </div>
       <div class="main__footer_item">
-        <a href="https://github.com/nim579/embed.works">
+        <a href="https://github.com/nim579/embeds.works">
+          <Github />
           Fork on GitHub
         </a>
       </div>
     </footer>
   </div>
 </template>
-
-<script>
-import Logo from '../assets/images/logo.svg?component';
-import i18n from './i18n.json';
-import { compress, insertHtml, copyText } from './utils';
-
-export default {
-  components: { Logo },
-
-  data() {
-    return {
-      value: '',
-      compressed: '',
-      observer: null,
-      codeCopied: false,
-      autoresizeCopied: false,
-      frameBox: { width: 0, height: 0 }
-    };
-  },
-
-  computed: {
-    lang() {
-      const lang = (window.navigator.language || 'en').split('-')[0].toLocaleLowerCase();
-      return lang === 'ru' ? 'ru' : 'en';
-    },
-
-    t() {
-      return i18n[this.lang];
-    },
-
-    url() {
-      if (!this.compressed) return '';
-
-      const route = this.$router.resolve({
-        name: 'embed',
-        query: { code: this.compressed }
-      });
-
-      return location.origin + route.fullPath;
-    },
-    code() {
-      if (!this.url) return '';
-      return `<iframe src="${this.url}" height="${this.frameBox.height}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-    },
-
-    autoresize() {
-      return location.origin + '/lib/autoresize.js';
-    },
-
-    autoresizeCode() {
-      const tag = 'script';
-      return `<${tag} src="${this.autoresize}" charset="utf-8"></${tag}>`;
-    }
-  },
-
-  mounted() {
-    this.observer = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
-      this.frameBox = { width, height };
-    });
-    this.observer.observe(this.$refs.frame);
-  },
-
-  methods: {
-    async process() {
-      this.compressed = await compress(this.value);
-      insertHtml(this.$refs.frame, this.value);
-    },
-
-    async copyCode() {
-      await copyText(this.code);
-      this.codeCopied = true;
-      setTimeout(() => this.codeCopied = false, 2500);
-    },
-
-    async copyAutoresize() {
-      await copyText(this.autoresizeCode);
-      this.autoresizeCopied = true;
-      setTimeout(() => this.autoresizeCopied = false, 2500);
-    }
-  }
-};
-</script>
 
 <style lang="scss" scoped>
 .main {
@@ -167,7 +163,7 @@ export default {
   font-family: SFRounded, sans-serif;
   font-weight: normal;
 
-  color: #1A1919;
+  color: var(--color-primary);
 
   &__section {
     display: flex;
@@ -186,7 +182,7 @@ export default {
       font-size: 26px;
       font-weight: 600;
       text-align: center;
-      color: #1A1919;
+      color: var(--color-primary);
 
       transition: opacity 0.2s, transform 0.2s;
 
@@ -203,7 +199,7 @@ export default {
       font-size: 18px;
       font-weight: 400;
       text-align: center;
-      color: #707070;
+      color: var(--color-secondary);
     }
 
     &.m_empty, &:last-child {
@@ -217,7 +213,7 @@ export default {
   }
 
   &__logo {
-    color: #1A1919;
+    color: var(--color-primary);
   }
   &__description {
     display: block;
@@ -228,7 +224,7 @@ export default {
     font-size: 18px;
     font-weight: 400;
     text-align: center;
-    color: #707070;
+    color: var(--color-secondary);
   }
 
   &__textarea {
@@ -239,9 +235,9 @@ export default {
     padding: 8px;
     box-sizing: border-box;
 
-    border: 2px solid #1A1919;
+    border: 2px solid var(--color-primary);
     border-radius: 8px;
-    background: #FFFFFF;
+    background: var(--color-bg);
 
     outline: 0;
     box-shadow: none;
@@ -257,7 +253,7 @@ export default {
     line-height: 20px;
     font-weight: normal;
     text-align: left;
-    color: #1A1919;
+    color: var(--color-primary);
 
     &:last-child {
       margin-bottom: 0;
@@ -275,14 +271,14 @@ export default {
     padding: 8px 16px;
     border: 0;
     border-radius: 8px;
-    background: #1A1919;
+    background: var(--color-primary);
 
     font-family: SFRounded, sans-serif;
     font-size: 16px;
     line-height: 20px;
     font-weight: 600;
     text-align: center;
-    color: #FFFFFF;
+    color: var(--color-bg);
 
     cursor: pointer;
     transition: all 0.4s;
@@ -296,6 +292,7 @@ export default {
     display: flex;
     justify-content: center;
     width: 100%;
+    border: 0;
   }
 
   &__copy {
@@ -307,9 +304,9 @@ export default {
     padding: 0;
     box-sizing: border-box;
 
-    border: 2px solid #1A1919;
+    border: 2px solid var(--color-primary);
     border-radius: 8px;
-    background: #FFFFFF;
+    background: var(--color-bg);
 
     &_input {
       flex: 1 1 auto;
@@ -333,7 +330,7 @@ export default {
       line-height: 20px;
       font-weight: normal;
       text-align: left;
-      color: #1A1919;
+      color: var(--color-primary);
     }
     &_action {
       flex: 0 0 auto;
@@ -348,18 +345,23 @@ export default {
     margin-top: auto;
 
     &_item {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
       margin-right: 16px;
 
       font-family: SFRounded, sans-serif;
       font-size: 16px;
       font-weight: 400;
       text-decoration: none;
-      color: #1A1919;
+      color: var(--color-primary);
 
       a {
+        display: inline-flex;
+        align-items: center;
         text-decoration: none;
-        color: #1A1919;
+        gap: 10px;
+        color: var(--color-primary);
       }
 
       &::after {

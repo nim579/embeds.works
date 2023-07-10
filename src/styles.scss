@@ -27,3 +27,34 @@
   font-style: normal;
   font-display: swap;
 }
+
+@mixin colors-light() {
+  --color-bg: #FFFFFF;
+  --color-bg-muted: #F6F5F5;
+  --color-primary: #1A1919;
+  --color-secondary: #707070;
+}
+@mixin colors-dark() {
+  --color-bg: #232323;
+    --color-bg-muted: #2B2B2C;
+    --color-primary: #EBEBEB;
+    --color-secondary: #696969;
+}
+
+:root,
+:root[data-theme='auto'],
+*[data-theme='auto'],
+:root[data-theme='light'],
+*[data-theme='light'] {
+  @include colors-light;
+}
+
+:root[data-theme='dark'],
+*[data-theme='dark'] {
+  @include colors-dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='auto'], *[data-theme='auto'], :root:not([data-theme]) {
+    @include colors-dark;
+  }
+}

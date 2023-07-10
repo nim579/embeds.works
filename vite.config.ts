@@ -1,16 +1,24 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
-import { A } from 'brotli/build/encode';
 
 export default defineConfig(() => {
   return {
+    envPrefix: 'APP_',
+
     plugins: [
       vue(),
 
       svgLoader({
         svgoConfig: {
-          plugins: [{ name: 'removeViewBox', active: false }]
+          plugins: [{
+            name: 'preset-default',
+            params: {
+              overrides: {
+                removeViewBox: false,
+              }
+            }
+          }]
         }
       })
     ],

@@ -1,10 +1,9 @@
+<script setup lang="ts">
+</script>
+
 <template>
   <router-view />
 </template>
-
-<script>
-export default {};
-</script>
 
 <style lang="scss">
 @use './styles';
@@ -15,6 +14,8 @@ body {
   min-height: 100%;
   margin: 0;
   padding: 0;
+  background: var(--color-bg);
+  color: var(--color-primary);
 }
 
 body {

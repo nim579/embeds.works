@@ -1,6 +1,6 @@
 {
   "ru": {
-    "title": "Embed Works!",
+    "title": "Embeds Works!",
     "description": "Конвертируйте эмбеды, виджеты или любой HTML-код в <iframe>",
     "value": "Вставьте сюда ваш код",
     "convert": "Сделать iframe!",
@@ -8,13 +8,13 @@
     "preview": "Превью",
     "autoresize": {
       "title": "Авто-ресайз iframe'ов",
-      "description": "Вы можете вставить этот скрипт на свой сайт, и все фреймы «Embed Works!» автоматически изменят размеры.",
+      "description": "Вы можете вставить этот скрипт на свой сайт, и все фреймы «Embeds Works!» автоматически изменят размеры.",
       "copy": "Скопировать"
     },
     "copied": "Скопировано!"
   },
   "en": {
-    "title": "Embed Works!",
+    "title": "Embeds Works!",
     "description": "Convert embeds, widgets or any HTML to <iframe>",
     "value": "Your code here",
     "convert": "iframe it!",
@@ -22,7 +22,7 @@
     "preview": "Preview",
     "autoresize": {
       "title": "Autoresize iframe",
-      "description": "You can paste this script on your site, and all iframes by \"Embed Works!\" will resizes automatically.",
+      "description": "You can paste this script on your site, and all iframes by \"Embeds Works!\" will resizes automatically.",
       "copy": "Copy"
     },
     "copied": "Copied!"
