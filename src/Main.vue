@@ -65,11 +65,16 @@ async function copyAutoresize() {
   setTimeout(() => autoresizeCopied.value = false, 2500);
 }
 
+function onResize(event: MessageEvent<any>) {
+  const result = onAutoresize(event);
+  if (result) frameBox.value = result;
+}
+
 onBeforeMount(() => {
-  window.addEventListener('message', onAutoresize);
+  window.addEventListener('message', onResize);
 });
 onBeforeUnmount(() => {
-  window.removeEventListener('message', onAutoresize);
+  window.removeEventListener('message', onResize);
 });
 </script>
 
@@ -259,7 +264,7 @@ onBeforeUnmount(() => {
       margin-bottom: 0;
     }
     &:read-only {
-      background: #F6F5F5;
+      background: var(--color-bg-muted);
     }
   }
   &__button {

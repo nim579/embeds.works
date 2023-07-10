@@ -4,6 +4,8 @@ import dts from 'vite-plugin-dts';
 
 export default defineConfig(() => {
   return {
+    envPrefix: 'APP_',
+
     plugins: [
       dts(),
     ],

@@ -115,5 +115,7 @@ export const onAutoresize = (event: MessageEvent<any>) => {
         iframe.style.height = `${data.params.height}px`;
       }
     });
+
+    return data.params;
   }
 };
