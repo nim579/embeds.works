@@ -1,72 +1,43 @@
 import * as brotli from 'brotli-compress';
 import type { ResizeMessage } from './Frame.vue';
 
-const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-const lookup = new Uint8Array(256);
-
-for (let i = 0; i < chars.length; i++) {
-  lookup[chars.charCodeAt(i)] = i;
-}
-
-export const stringToBuffer = (str: string) => Uint8Array.from(String(str).split('').map(char => char.charCodeAt(0)));
-
-export const bufferToString = (buf: Uint8Array) => String.fromCharCode.apply(null, Array.from(buf));
-
 export const stringToBlob = (string: string) => fetch(`data:text/plain,${string}`).then(req => req.blob());
 
 export const bufferToBase64 = (arraybuffer: ArrayBuffer) => {
   if (typeof arraybuffer === 'string') return arraybuffer;
 
+  let binary = '';
   const bytes = new Uint8Array(arraybuffer);
-  const len = bytes.length;
-  let base64url = '';
+  const len = bytes.byteLength;
 
-  for (let i = 0; i < len; i += 3) {
-    base64url += chars[bytes[i] >> 2];
-    base64url += chars[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
-    base64url += chars[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
-    base64url += chars[bytes[i + 2] & 63];
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
 
-  if ((len % 3) === 2) {
-    base64url = base64url.substring(0, base64url.length - 1);
-  } else if (len % 3 === 1) {
-    base64url = base64url.substring(0, base64url.length - 2);
-  }
-
-  return base64url;
+  return window.btoa(binary);
 };
 
 export const base64ToBuffer = (base64string: string) => {
   if (typeof base64string !== 'string') return base64string;
 
-  const bufferLength = base64string.length * 0.75;
-  const len = base64string.length;
-  let p = 0;
+  const binaryString = window.atob(base64string);
+  const bytes = new Uint8Array(binaryString.length);
 
-  const bytes = new Uint8Array(bufferLength);
-
-  for (let i = 0; i < len; i += 4) {
-    const encoded1 = lookup[base64string.charCodeAt(i)];
-    const encoded2 = lookup[base64string.charCodeAt(i + 1)];
-    const encoded3 = lookup[base64string.charCodeAt(i + 2)];
-    const encoded4 = lookup[base64string.charCodeAt(i + 3)];
-
-    bytes[p++] = (encoded1 << 2) | (encoded2 >> 4);
-    bytes[p++] = ((encoded2 & 15) << 4) | (encoded3 >> 2);
-    bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
   }
-
   return bytes;
 };
 
 export const compress = async (string: string) => {
-  const buf = await brotli.compress(stringToBuffer(string));
+  const encoder = new TextEncoder();
+  const buf = await brotli.compress(encoder.encode(string));
   return bufferToBase64(buf);
 };
 export const decompress = async (base64string: string) => {
   const buf = await brotli.decompress(base64ToBuffer(base64string));
-  return bufferToString(buf);
+  const decoder = new TextDecoder();
+  return decoder.decode(buf);
 };
 
 
