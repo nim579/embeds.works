@@ -14,13 +14,19 @@ export const bufferToBase64 = (arraybuffer: ArrayBuffer) => {
     binary += String.fromCharCode(bytes[i]);
   }
 
-  return window.btoa(binary);
+  return window.btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
 };
 
 export const base64ToBuffer = (base64string: string) => {
   if (typeof base64string !== 'string') return base64string;
 
-  const binaryString = window.atob(base64string);
+  const binaryString = window.atob(
+    base64string
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+  );
   const bytes = new Uint8Array(binaryString.length);
 
   for (let i = 0; i < binaryString.length; i++) {
